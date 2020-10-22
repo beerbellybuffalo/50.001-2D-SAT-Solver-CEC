@@ -2,14 +2,10 @@ package sat;
 
 /*
 import static org.junit.Assert.*;
-
 import org.junit.Test;
 */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Scanner;
+import java.io.*;
 
 import sat.env.*;
 import sat.formula.*;
@@ -28,106 +24,93 @@ public class SATSolverTest {
 	// TODO: add the main method that reads the .cnf file and calls SATSolver.solve to determine the satisfiability
     public static void main(String args[]) throws IOException {
     	
-    	long readTime = System.nanoTime();
-    	Scanner scan = null;
-    	File fin = null;
-    	
-    	try {
-    		//The entire name of the cnf file (e.g. "testcase.cnf") to run 
-    		//is passed to the main() method via a command line argument, 
-    		//thus you read the filename from the args array. 
-    		//eg. java SATSolverTest testcase.cnf
-    		System.out.print("Reading file");
-    		
-    		//assign Scanner input to File f
-    		fin = new File("D:\\javawork\\ps4-starting\\src\\sat\\largeUnsat.cnf");
-    		scan = new Scanner(fin);
-    		
-    		//remove comments "c"
-    		boolean commentCheck = true;
-			while (commentCheck != false) {
-    			String[] commentRemove = scan.nextLine().split(" ");
-    			if (commentRemove[0]!="c"||commentRemove[0]!="C") {
-    				commentCheck = false;
-    			}
-    		}
-			
-			String[] format = scan.nextLine().split(" ");
-			String testF = format[format.length-1];
-			System.out.println(testF);
-			int numberOfClauses = Integer.parseInt(testF);
-			Formula f = new Formula();
-			String line = null;
-			while (f.getSize() != numberOfClauses) {
-				line = scan.nextLine();
-				if (line.length() > 0) {
-                    String[] tempLine = line.split(" ");
-                    Clause c = new Clause();
-                    for (String i:tempLine) {
-                    	
-                        if(Integer.parseInt(i) == 0) {
+    	// The name of the file to open.
+        String fileName = "D:\\javawork\\ps4-starting\\src\\sat\\test_2020.cnf";
+        int counter = 0;
+
+        // This will reference one line at a time
+        String line = null;
+        FileReader fileReader = null;
+        // FileReader reads text files in the default encoding.
+        fileReader = 
+            new FileReader(fileName);
+
+        // Always wrap FileReader in BufferedReader.
+        BufferedReader bufferedReader = 
+            new BufferedReader(fileReader);
+
+        try {
+            
+            boolean commentCheck = false;
+            Formula currFormula = new Formula();
+            Clause currClause = new Clause();
+            
+            while((line = bufferedReader.readLine()) != null && !line.isEmpty()) {
+                counter++;
+                // Clauses start after line with p cnf ...
+                if(line.startsWith("p cnf")) {
+                	commentCheck = true;
+                	line = bufferedReader.readLine();
+                }
+                if(commentCheck) {
+                	String[] literalArr = line.trim().split(" ");
+                	//System.out.println(line);
+                	
+                	for (String literalStr:literalArr) {
+                		if (currClause == null) {
+                        	currClause = new Clause();
+                        }
+                		if (Integer.parseInt(literalStr) == 0) {
                             break;
                         }
-                        
-                        //literal instance
-                        Literal literal = PosLiteral.make(Integer.toString(Math.abs(Integer.parseInt(i))));
-                        
-                        //add negated Integer to clause if string is negative
-                        if((Integer.parseInt(i)) < 0){
-                            c = c.add(literal.getNegation());
+                	// literal instance
+                        Literal literal = PosLiteral.make(Integer.toString(Math.abs(Integer.parseInt(literalStr))));
+                        // negative literal
+                        if((Integer.parseInt(literalStr)) < 0) {
+                            currClause = currClause.add(literal.getNegation());
                         }
-                        
-                        //add positive Integer to clause if string is positive
-                        else if ((Integer.parseInt(i))>0){
-                            c = c.add(literal);
-                        }
-                        
-                        if (c == null) {
-                            c = new Clause();
-                        }
-                        
-                    }
-                    //add clause to formula
-                    f = f.addClause(c);
+                        // positive literal
+                        else if ((Integer.parseInt(literalStr)) > 0) {
+                        	currClause = currClause.add(literal);
+                        } 
+                	}
                 }
-			}
-			
-			String fileName = "D:\\javawork\\ps4-starting\\src\\sat\\BoolAssignment.txt";
-            PrintWriter write = new PrintWriter(fileName, "UTF-8");
-            long endReadTime = System.nanoTime();
-            long tReadTime = endReadTime - readTime;
-            System.out.println("Reading Time: " + tReadTime/1000000000.0 + "s");
-            System.out.println("SAT Solver starts");
+            }
+            
+            
+            System.out.println("Starting SAT solver...");
             long started = System.nanoTime();
-            Environment env = SATSolver.solve(f);
+            Environment result = null;
+            if (commentCheck) {
+                result = SATSolver.solve(currFormula);
+            }
+
             long time = System.nanoTime();
-            long timeTaken = time - started;
-            System.out.println("Solving Time: " + timeTaken/1000000.0 + "ms");
-            System.out.println("Total Time: " + (timeTaken+tReadTime)/1000000000.0 + "s");
-            if (env == null) {
-            	System.out.println("Formula Unsatisfiable");
-            } else {
-            	System.out.println("Formula Satisfiable");
-            	String bindings = env.toString();
-            	System.out.println(bindings);
-            	bindings = bindings.substring(bindings.indexOf("[")+1, bindings.indexOf("]"));
-            	String[] bindingNew = bindings.split(", ");
-            	
-            	for (String binding : bindingNew) {
-            		String[] bind = binding.split("->");
-            		write.println(bind[0] + ":" + bind[1]);
-            	}
+            long timeTaken= time - started;
+            System.out.println("Time: " + timeTaken/1000000.0 + "ms");
+            
+            // Write to BoolAssignment.txt
+            
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println(
+                "Unable to open file '" + 
+                fileName + "'");                
+        }
+        catch(IOException ex) {
+            System.out.println(
+                "Error reading file '" 
+                + fileName + "'");                  
+            // Or we could just do this: 
+            // ex.printStackTrace();
+        }
+        finally
+        {
+            if(fileReader != null){
+               // Always close files.
+               bufferedReader.close();            
             }
-            write.close();
-			
-    	} finally {
-    		
-    		if (scan != null) {
-                scan.close();
-            }
-    		
-    	}
-    	
+        }
     	
     }
 	
