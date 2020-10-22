@@ -57,20 +57,20 @@ public class SATSolverTest {
                 	//System.out.println(line);
                 	
                 	for (String literalStr:literalArr) {
-                		if (currClause == null) {
+                		if(currClause == null) {
                         	currClause = new Clause();
                         }
-                		if (Integer.parseInt(literalStr) == 0) {
+                		if(Integer.parseInt(literalStr) == 0) {
                             break;
                         }
-                	// literal instance
+                		// literal instance
                         Literal literal = PosLiteral.make(Integer.toString(Math.abs(Integer.parseInt(literalStr))));
                         // negative literal
                         if((Integer.parseInt(literalStr)) < 0) {
                             currClause = currClause.add(literal.getNegation());
                         }
                         // positive literal
-                        else if ((Integer.parseInt(literalStr)) > 0) {
+                        else if((Integer.parseInt(literalStr)) > 0) {
                         	currClause = currClause.add(literal);
                         } 
                 	}
@@ -81,15 +81,23 @@ public class SATSolverTest {
             System.out.println("Starting SAT solver...");
             long started = System.nanoTime();
             Environment result = null;
-            if (commentCheck) {
+            if(commentCheck) {
                 result = SATSolver.solve(currFormula);
             }
-
+            
             long time = System.nanoTime();
             long timeTaken= time - started;
             System.out.println("Time: " + timeTaken/1000000.0 + "ms");
             
-            // Write to BoolAssignment.txt
+            if(result == null) {
+                System.out.println("Unsatisfiable");
+            }
+            else {
+                System.out.println("Satisfiable");
+            }
+            
+            //Write to BoolAssignment.txt
+            
             
         }
         catch(FileNotFoundException ex) {
@@ -106,7 +114,7 @@ public class SATSolverTest {
         }
         finally
         {
-            if(fileReader != null){
+            if(fileReader != null) {
                // Always close files.
                bufferedReader.close();            
             }
