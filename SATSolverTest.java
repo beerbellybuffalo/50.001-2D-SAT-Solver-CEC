@@ -25,7 +25,7 @@ public class SATSolverTest {
     public static void main(String args[]) throws IOException {
     	
     	// The name of the file to open.
-        String fileName = "D:\\javawork\\ps4-starting\\src\\sat\\test_2020.cnf";
+        String fileName = args[0];
         int counter = 0;
 
         // This will reference one line at a time
@@ -38,6 +38,15 @@ public class SATSolverTest {
         // Always wrap FileReader in BufferedReader.
         BufferedReader bufferedReader = 
             new BufferedReader(fileReader);
+        
+        FileWriter fileWriter = null;
+        // FileWriter writes to text files in the default encoding.
+        fileWriter = 
+            new FileWriter("BoolAssignment.txt");
+
+        // Always wrap FileWriter in BufferedWriter.
+        BufferedWriter bufferedWriter = 
+            new BufferedWriter(fileWriter);
 
         try {
             
@@ -53,40 +62,34 @@ public class SATSolverTest {
                 	line = bufferedReader.readLine();
                 }
                 if(commentCheck) {
-                	String[] literalArr = line.trim().split(" ");
+                	String[] literalArr = line.trim().split("\\s+");
                 	//System.out.println(line);
                 	
                 	for (String literalStr:literalArr) {
-                		if(currClause == null) {
-                        	currClause = new Clause();
-                        }
+                		// new clause if 0
                 		if(Integer.parseInt(literalStr) == 0) {
-                            break;
+                            currFormula = currFormula.addClause(currClause);
+                            currClause = new Clause();
                         }
-                		// literal instance
-                        Literal literal = PosLiteral.make(Integer.toString(Math.abs(Integer.parseInt(literalStr))));
                         // negative literal
                         if((Integer.parseInt(literalStr)) < 0) {
-                            currClause = currClause.add(literal.getNegation());
+                            currClause = currClause.add(NegLiteral.make(literalStr.substring(1)));
                         }
                         // positive literal
                         else if((Integer.parseInt(literalStr)) > 0) {
-                        	currClause = currClause.add(literal);
+                        	currClause = currClause.add(PosLiteral.make(literalStr));
                         } 
                 	}
                 }
             }
             
-            
             System.out.println("Starting SAT solver...");
             long started = System.nanoTime();
             Environment result = null;
-            if(commentCheck) {
-                result = SATSolver.solve(currFormula);
-            }
+            result = SATSolver.solve(currFormula);
             
             long time = System.nanoTime();
-            long timeTaken= time - started;
+            long timeTaken = time - started;
             System.out.println("Time: " + timeTaken/1000000.0 + "ms");
             
             if(result == null) {
@@ -94,10 +97,18 @@ public class SATSolverTest {
             }
             else {
                 System.out.println("Satisfiable");
+                
+                // Write to BoolAssignment.txt since Satisfiable
+                String output = result.toString();
+                System.out.println(output);
+                
+                // Formatting output
+                String str1 = output.replace("Environment:[", "");
+                String str2 = str1.replace("->", ":");
+                String str3 = str2.replace("]", "");
+                bufferedWriter.write(str3);
+                
             }
-            
-            //Write to BoolAssignment.txt
-            
             
         }
         catch(FileNotFoundException ex) {
@@ -117,6 +128,10 @@ public class SATSolverTest {
             if(fileReader != null) {
                // Always close files.
                bufferedReader.close();            
+            }
+            
+            if(fileWriter != null) {
+                bufferedWriter.close();
             }
         }
     	
