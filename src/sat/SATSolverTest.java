@@ -29,7 +29,7 @@ public class SATSolverTest {
     public static void main(String args[]) throws IOException {
     	
     	// The name of the file to open.
-        String fileName = "E:\\My stuff\\UNI STUFF BACKUP\\Term 6\\50.001 Java\\2D SAT Solver\\50.001-2D-SAT-Solver-CEC\\sampleCNF\\test_2020.cnf";
+        String fileName = "E:\\My stuff\\UNI STUFF BACKUP\\Term 6\\50.001 Java\\2D SAT Solver\\50.001-2D-SAT-Solver-CEC\\sampleCNF\\sat1.cnf";
         int counter = 0;
 
         // This will reference one line at a time
@@ -44,9 +44,9 @@ public class SATSolverTest {
             new BufferedReader(fileReader);
         
         FileWriter fileWriter = null;
-        // FileWriter writes to text files in the default encoding.
-        fileWriter = 
-            new FileWriter("BoolAssignment.txt");
+        // // FileWriter writes to text files in the default encoding.
+         fileWriter = 
+             new FileWriter("BoolAssignment.txt", true);    //true will make it append instead of overwrite
 
         // Always wrap FileWriter in BufferedWriter.
         BufferedWriter bufferedWriter = 
@@ -105,11 +105,12 @@ public class SATSolverTest {
                 // Write to BoolAssignment.txt since Satisfiable
                 String output = result.toString();
                 System.out.println(output);
-                
+                //System.out.println(currFormula);
+
                 // Formatting output
                 String str1 = output.replace("Environment:[", "");
                 String str2 = str1.replace("->", ":");
-                String str3 = str2.replace("]", "");
+                String str3 = "\n" + str2.replace("]", "");
                 bufferedWriter.write(str3);
                 
             }

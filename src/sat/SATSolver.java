@@ -98,10 +98,9 @@ public class SATSolver {
             Clause c = iter.next(); //check for l
             if (c.contains(l) || c.contains(l.getNegation())){
                 c = c.reduce(l); // l is found, reduce it
-                if (c == null) {
-                    break;
-                }
-                result.add(c); //add it to the new ImList
+            }
+            if (c != null) {
+                result = result.add(c); //add it to the new ImList
             }
         }
         return result; //return list with l set to true
