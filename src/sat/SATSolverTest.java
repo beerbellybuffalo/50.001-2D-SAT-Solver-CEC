@@ -90,8 +90,10 @@ public class SATSolverTest {
             System.out.println("Starting SAT solver...");
             long started = System.nanoTime();
             Environment result = null;
-            result = SATSolver.solve(currFormula);
-            
+            // Only parse if correct format (dimacs)
+            if (commentCheck == true) {
+                result = SATSolver.solve(currFormula);
+            }
             long time = System.nanoTime();
             long timeTaken = time - started;
             System.out.println("Time: " + timeTaken/1000000.0 + "ms");
