@@ -1,14 +1,18 @@
 package sat;
 
-/*
-import static org.junit.Assert.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
-import org.junit.Test;
-*/
-
-import sat.env.*;
-import sat.formula.*;
-
+import sat.env.Environment;
+import sat.formula.Clause;
+import sat.formula.Formula;
+import sat.formula.Literal;
+import sat.formula.NegLiteral;
+import sat.formula.PosLiteral;
 
 public class SATSolverTest {
     Literal a = PosLiteral.make("a");
@@ -19,10 +23,123 @@ public class SATSolverTest {
     Literal nc = c.getNegation();
 
 
-
+    
 	
 	// TODO: add the main method that reads the .cnf file and calls SATSolver.solve to determine the satisfiability
-    
+    public static void main(String args[]) throws IOException {
+    	
+    	// The name of the file to open.
+        String fileName = "E:\\My stuff\\UNI STUFF BACKUP\\Term 6\\50.001 Java\\2D SAT Solver\\50.001-2D-SAT-Solver-CEC\\sampleCNF\\test_2020.cnf";
+        int counter = 0;
+
+        // This will reference one line at a time
+        String line = null;
+        FileReader fileReader = null;
+        // FileReader reads text files in the default encoding.
+        fileReader = 
+            new FileReader(fileName);
+
+        // Always wrap FileReader in BufferedReader.
+        BufferedReader bufferedReader = 
+            new BufferedReader(fileReader);
+        
+        FileWriter fileWriter = null;
+        // FileWriter writes to text files in the default encoding.
+        fileWriter = 
+            new FileWriter("BoolAssignment.txt");
+
+        // Always wrap FileWriter in BufferedWriter.
+        BufferedWriter bufferedWriter = 
+            new BufferedWriter(fileWriter);
+
+        try {
+            
+            boolean commentCheck = false;
+            Formula currFormula = new Formula();
+            Clause currClause = new Clause();
+            
+            while((line = bufferedReader.readLine()) != null && !line.isEmpty()) {
+                counter++;
+                // Clauses start after line with p cnf ...
+                if(line.startsWith("p cnf")) {
+                	commentCheck = true;
+                	line = bufferedReader.readLine();
+                }
+                if(commentCheck) {
+                	String[] literalArr = line.trim().split("\\s+");
+                	//System.out.println(line);
+                	
+                	for (String literalStr:literalArr) {
+                		// new clause if 0
+                		if(Integer.parseInt(literalStr) == 0) {
+                            currFormula = currFormula.addClause(currClause);
+                            currClause = new Clause();
+                        }
+                        // negative literal
+                        if((Integer.parseInt(literalStr)) < 0) {
+                            currClause = currClause.add(NegLiteral.make(literalStr.substring(1)));
+                        }
+                        // positive literal
+                        else if((Integer.parseInt(literalStr)) > 0) {
+                        	currClause = currClause.add(PosLiteral.make(literalStr));
+                        } 
+                	}
+                }
+            }
+            
+            System.out.println("Starting SAT solver...");
+            long started = System.nanoTime();
+            Environment result = null;
+            result = SATSolver.solve(currFormula);
+            
+            long time = System.nanoTime();
+            long timeTaken = time - started;
+            System.out.println("Time: " + timeTaken/1000000.0 + "ms");
+            
+            if(result == null) {
+                System.out.println("Unsatisfiable");
+            }
+            else {
+                System.out.println("Satisfiable");
+                
+                // Write to BoolAssignment.txt since Satisfiable
+                String output = result.toString();
+                System.out.println(output);
+                
+                // Formatting output
+                String str1 = output.replace("Environment:[", "");
+                String str2 = str1.replace("->", ":");
+                String str3 = str2.replace("]", "");
+                bufferedWriter.write(str3);
+                
+            }
+            
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println(
+                "Unable to open file '" + 
+                fileName + "'");                
+        }
+        catch(IOException ex) {
+            System.out.println(
+                "Error reading file '" 
+                + fileName + "'");                  
+            // Or we could just do this: 
+            // ex.printStackTrace();
+        }
+        finally
+        {
+            if(fileReader != null) {
+               // Always close files.
+               bufferedReader.close();            
+            }
+            
+            if(fileWriter != null) {
+                bufferedWriter.close();
+            }
+        }
+    	
+    }
 	
     public void testSATSolver1(){
     	// (a v b)

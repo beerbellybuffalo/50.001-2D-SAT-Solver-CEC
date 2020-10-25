@@ -1,13 +1,14 @@
 package sat;
 
+import java.util.Iterator;
+
+import immutable.EmptyImList;
 import immutable.ImList;
-import sat.env.Environment;
-import sat.env.Variable;
 import sat.formula.Clause;
 import sat.formula.Formula;
-import sat.formula.Literal;
-import sat.formula.NegLiteral;
 import sat.formula.PosLiteral;
+import sun.tools.java.Environment;
+import sun.tools.jstat.Literal;
 
 /**
  * A simple DPLL SAT solver. See http://en.wikipedia.org/wiki/DPLL_algorithm
@@ -23,8 +24,7 @@ public class SATSolver {
      *         null if no such environment exists.
      */
     public static Environment solve(Formula formula) {
-        // TODO: implement this.
-        return solve(formula.getClauses(), new Environment()); //creates new immutable list
+        return solve(formula.getClauses(), new Environment());
     }
 
     /**
@@ -40,12 +40,11 @@ public class SATSolver {
      *         or null if no such environment exists.
      */
     private static Environment solve(ImList<Clause> clauses, Environment env) {
-        // TODO: implement this.
         if (clauses.size() == 0) {
-            return env; //backtrack
+            return env;
         }
-        
-        int smallestSize = clauses.first().size(); //this is the clause size of the smallest clause, counted by the number of literals. we intialise this to the size of the first clause.
+
+        int smallestSize = clauses.first().size(); //this is the clause size of the smallest clause, counted by the number of literals. we initialise this to the size of the first clause.
         Clause smallestClause = clauses.first();
         for (Clause c:clauses) {
             if (c.isEmpty()) {
@@ -58,30 +57,27 @@ public class SATSolver {
                 }
             }
         }
-
+        Literal l = smallestClause.chooseLiteral();
+        Environment alltrue;
         if (smallestClause.isUnit()) {
-            Variable V = smallestClause.chooseLiteral().getVariable();
-            String s = V.getName();  //this is the variable number as a String
-            try {
-              // convert String to int
-              int i = Integer.parseInt(s.trim());
-              if (i<0) {
-                  env.putFalse(V);
-                  
-              }
-              else if (i>0) {
-                  env.putTrue(V);
-                  
-              }        
-              //// print out the value after the conversion
-              //System.out.println("int i = " + i);
+            if (l instanceof PosLiteral){ //@Brandon need code here to determine if a literal is positive or negative
+                alltrue = solve(substitute(clauses, l), env.putTrue(l.getVariable()));
+            } else{
+                alltrue = solve(substitute(clauses, l), env.putFalse(l.getVariable()));
             }
-            catch (NumberFormatException nfe) {
-              System.out.println("NumberFormatException: " + nfe.getMessage());
-            }            
-        }
+        }else{
+            env = env.putTrue(l.getVariable());
+            ImList<Clause> temp = substitute(clauses, l);
 
-        throw new RuntimeException("not yet implemented.");
+            Environment potential = solve(temp, env);
+            if (potential == null){
+                env = env.putFalse(l.getVariable());
+                return solve(substitute(clauses, l.getNegation()), env);
+            } else{
+                return potential;
+            }
+        }
+        return alltrue;
     }
 
     /**
@@ -96,13 +92,19 @@ public class SATSolver {
      */
     private static ImList<Clause> substitute(ImList<Clause> clauses,
             Literal l) {
-        // TODO: implement this.
-        for (Clause c:clauses) {
-            for (Literal k:c) {
-                if (k.equals(l)) ;
+        ImList<Clause> result = new EmptyImList<Clause>();
+        Iterator<Clause> iter = clauses.iterator();
+        while (iter.hasNext()){
+            Clause c = iter.next(); //check for l
+            if (c.contains(l) || c.contains(l.getNegation())){
+                c = c.reduce(l); // l is found, reduce it
+                if (c == null) {
+                    break;
+                }
+                result.add(c); //add it to the new ImList
             }
         }
-        throw new RuntimeException("not yet implemented.");
+        return result; //return list with l set to true
     }
 
 }
