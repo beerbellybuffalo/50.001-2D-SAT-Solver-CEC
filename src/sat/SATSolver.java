@@ -7,8 +7,8 @@ import immutable.ImList;
 import sat.formula.Clause;
 import sat.formula.Formula;
 import sat.formula.PosLiteral;
-import sun.tools.java.Environment;
-import sun.tools.jstat.Literal;
+import sat.env.Environment;
+import sat.formula.Literal;
 
 /**
  * A simple DPLL SAT solver. See http://en.wikipedia.org/wiki/DPLL_algorithm
