@@ -1,18 +1,14 @@
 package sat;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+/*
+import static org.junit.Assert.*;
+import org.junit.Test;
+*/
 
-import sat.env.Environment;
-import sat.formula.Clause;
-import sat.formula.Formula;
-import sat.formula.Literal;
-import sat.formula.NegLiteral;
-import sat.formula.PosLiteral;
+import java.io.*;
+
+import sat.env.*;
+import sat.formula.*;
 
 public class SATSolverTest {
     Literal a = PosLiteral.make("a");
@@ -29,8 +25,7 @@ public class SATSolverTest {
     public static void main(String args[]) throws IOException {
     	
     	// The name of the file to open.
-        String fileName = "E:\\My stuff\\UNI STUFF BACKUP\\Term 6\\50.001 Java\\2D SAT Solver\\50.001-2D-SAT-Solver-CEC\\sampleCNF\\sat1.cnf";
-        int counter = 0;
+        String fileName = "D:\\javawork\\ps4-starting\\src\\sat\\largeSat.cnf";
 
         // This will reference one line at a time
         String line = null;
@@ -44,9 +39,9 @@ public class SATSolverTest {
             new BufferedReader(fileReader);
         
         FileWriter fileWriter = null;
-        // // FileWriter writes to text files in the default encoding.
-         fileWriter = 
-             new FileWriter("BoolAssignment.txt", true);    //true will make it append instead of overwrite
+        // FileWriter writes to text files in the default encoding.
+        fileWriter = 
+            new FileWriter("D:\\javawork\\ps4-starting\\src\\sat\\BoolAssignment.txt");
 
         // Always wrap FileWriter in BufferedWriter.
         BufferedWriter bufferedWriter = 
@@ -59,7 +54,7 @@ public class SATSolverTest {
             Clause currClause = new Clause();
             
             while((line = bufferedReader.readLine()) != null && !line.isEmpty()) {
-                counter++;
+
                 // Clauses start after line with p cnf ...
                 if(line.startsWith("p cnf")) {
                 	commentCheck = true;
@@ -91,9 +86,10 @@ public class SATSolverTest {
             long started = System.nanoTime();
             Environment result = null;
             // Only parse if correct format (dimacs)
-            if (commentCheck == true) {
-                result = SATSolver.solve(currFormula);
+            if(commentCheck == true) {
+            	result = SATSolver.solve(currFormula);
             }
+            
             long time = System.nanoTime();
             long timeTaken = time - started;
             System.out.println("Time: " + timeTaken/1000000.0 + "ms");
@@ -107,13 +103,13 @@ public class SATSolverTest {
                 // Write to BoolAssignment.txt since Satisfiable
                 String output = result.toString();
                 System.out.println(output);
-                //System.out.println(currFormula);
-
+                
                 // Formatting output
                 String str1 = output.replace("Environment:[", "");
                 String str2 = str1.replace("->", ":");
-                String str3 = "\n" + str2.replace("]", "");
-                bufferedWriter.write(str3);
+                String str3 = str2.replace("]", "");
+                String str4 = str3.replace(", ", "\n");
+                bufferedWriter.write(str4);
                 
             }
             
