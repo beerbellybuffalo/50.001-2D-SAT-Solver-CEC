@@ -25,7 +25,7 @@ public class SATSolverTest {
     public static void main(String args[]) throws IOException {
     	
     	// The name of the file to open.
-        String fileName = "D:\\javawork\\ps4-starting\\src\\sat\\largeSat.cnf";
+        String fileName = args[0];
 
         // This will reference one line at a time
         String line = null;
@@ -41,7 +41,7 @@ public class SATSolverTest {
         FileWriter fileWriter = null;
         // FileWriter writes to text files in the default encoding.
         fileWriter = 
-            new FileWriter("D:\\javawork\\ps4-starting\\src\\sat\\BoolAssignment.txt");
+            new FileWriter("BoolAssignment.txt");
 
         // Always wrap FileWriter in BufferedWriter.
         BufferedWriter bufferedWriter = 
